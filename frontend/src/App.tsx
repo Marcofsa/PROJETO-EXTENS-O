@@ -43,6 +43,7 @@ export default function App() {
   const [categoria, setCategoria] = useState<string>('')
   const [formError, setFormError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [catalogOpen, setCatalogOpen] = useState<boolean>(false)
   const [materialForm, setMaterialForm] = useState({
     id: '',
     nome: '',
@@ -77,6 +78,17 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme)
     window.localStorage.setItem('theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    if (catalogOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [catalogOpen])
 
   function addItem() {
     if (!selected || !qty || qty <= 0) {
@@ -369,8 +381,15 @@ export default function App() {
           <div className="col-12 col-lg-7">
             <div className="card shadow-sm mb-4">
               <div className="card-body">
-                <h2 className="h5">Gerenciar materiais (CRUD)</h2>
-                <div className="text-muted mb-3">Cadastre o coeficiente de carbono para usar nos cálculos.</div>
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div>
+                    <h2 className="h5 mb-1">Gerenciar materiais (CRUD)</h2>
+                    <div className="text-muted">Cadastre o coeficiente de carbono para usar nos cálculos.</div>
+                  </div>
+                  <button className="btn btn-outline-primary btn-sm" onClick={() => setCatalogOpen(true)}>
+                    Ver catálogo
+                  </button>
+                </div>
 
                 <div className="row g-3">
                   <div className="col-12 col-md-4">
@@ -523,12 +542,18 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className="section-label">Catálogo</div>
-        <div className="card shadow-sm mt-2 catalog-card catalog-card--wide">
-          <div className="card-body">
+      </div>
+      {catalogOpen && (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Catálogo de materiais">
+          <div className="modal-card">
             <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-              <h2 className="h5 mb-0">Catálogo de Materiais</h2>
-              {loading && <span className="spinner-border spinner-border-sm text-secondary" aria-hidden="true" />}
+              <div>
+                <h2 className="h5 mb-1">Catálogo de Materiais</h2>
+                <div className="text-muted">Consulte, edite ou remova materiais cadastrados.</div>
+              </div>
+              <button className="btn btn-outline-secondary btn-sm" onClick={() => setCatalogOpen(false)}>
+                Fechar
+              </button>
             </div>
 
             <div className="row g-2 mb-3">
@@ -586,7 +611,7 @@ export default function App() {
             </div>
           </div>
         </div>
-      </div>
+      )}
       <button
         className="btn floating-theme-toggle"
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
