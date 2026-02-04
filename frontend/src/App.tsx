@@ -111,17 +111,6 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        window.localStorage.removeItem("user");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     window.localStorage.setItem("theme", theme);
   }, [theme]);
@@ -176,7 +165,6 @@ export default function App() {
       }
       const data = await res.json();
       setUser(data);
-      window.localStorage.setItem("user", JSON.stringify(data));
       setAuthEmail("");
       setAuthPassword("");
     } catch (err: any) {
@@ -192,7 +180,6 @@ export default function App() {
 
   function handleLogout() {
     setUser(null);
-    window.localStorage.removeItem("user");
   }
 
   function addItem() {
