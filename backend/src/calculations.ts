@@ -12,7 +12,8 @@ export function calculateProjectImpact(items: Item[], materials: Material[]) {
     const mat = findMaterial(materials, it.materialId)
     if (!mat) continue
     const qty = Number(it.quantidade) || 0
-    totals.pegada_carbono_kg += qty * (mat.pegada_carbono || 0)
+    const factor = Number(mat.pegada_carbono) || 0
+    totals.pegada_carbono_kg += qty * factor
   }
 
   return totals

@@ -1,4 +1,17 @@
 import React, { useEffect, useState } from 'react'
+import * as XLSX from 'xlsx'
+import { Bar, Doughnut } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend)
 
 type Material = {
   id: string
@@ -18,7 +31,7 @@ export default function App() {
   const [items, setItems] = useState<{ materialId: string; quantidade: number }[]>([])
   const [selected, setSelected] = useState<string>('')
   const [qty, setQty] = useState<number>(0)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<{ apiTotal?: number; error?: string; calculatedAt?: string } | null>(null)
   const [search, setSearch] = useState<string>('')
   const [categoria, setCategoria] = useState<string>('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -70,8 +83,9 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items })
       })
+      if (!res.ok) throw new Error('calc_error')
       const data = await res.json()
-      setResult(data)
+      setResult({ apiTotal: data?.pegada_carbono_kg, calculatedAt: new Date().toISOString() })
     } catch (err) {
       setResult({ error: 'network_error' })
     }
@@ -163,6 +177,73 @@ export default function App() {
   })
   const selectedMaterial = materials.find((m) => m.id === selected)
   const totalItems = items.reduce((acc, it) => acc + it.quantidade, 0)
+  const numberFmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 })
+  const breakdown = items.map((it) => {
+    const mat = materials.find((m) => m.id === it.materialId)
+    const factor = mat?.pegada_carbono ? Number(mat.pegada_carbono) : 0
+    const impact = Number(it.quantidade) * factor
+    return {
+      id: it.materialId,
+      nome: mat?.nome || it.materialId,
+      unidade: mat?.unidade || '',
+      quantidade: Number(it.quantidade),
+      fator: factor,
+      impacto: impact
+    }
+  })
+  const totalImpact = breakdown.reduce((acc, it) => acc + it.impacto, 0)
+  const topBreakdown = [...breakdown].sort((a, b) => b.impacto - a.impacto).slice(0, 6)
+  const chartColors = ['#0ea5e9', '#22c55e', '#f97316', '#e11d48', '#8b5cf6', '#14b8a6']
+  const barData = {
+    labels: breakdown.map((it) => it.nome),
+    datasets: [
+      {
+        label: 'Impacto (kgCO₂eq)',
+        data: breakdown.map((it) => it.impacto),
+        backgroundColor: '#0ea5e9'
+      }
+    ]
+  }
+  const doughnutData = {
+    labels: topBreakdown.map((it) => it.nome),
+    datasets: [
+      {
+        data: topBreakdown.map((it) => it.impacto),
+        backgroundColor: chartColors.slice(0, topBreakdown.length)
+      }
+    ]
+  }
+
+  function exportToExcel() {
+    if (breakdown.length === 0) return
+    const summaryRows = [
+      {
+        metric: 'Pegada total (kgCO2eq)',
+        value: totalImpact,
+        api_total: result?.apiTotal ?? ''
+      }
+    ]
+    const itemRows = breakdown.map((it) => ({
+      id: it.id,
+      nome: it.nome,
+      quantidade: it.quantidade,
+      unidade: it.unidade,
+      coeficiente: it.fator,
+      impacto_kgco2eq: it.impacto
+    }))
+    const topRows = topBreakdown.map((it) => ({
+      nome: it.nome,
+      impacto_kgco2eq: it.impacto
+    }))
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Resumo')
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(itemRows), 'Itens')
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topRows), 'TopCarbono')
+
+    const fileName = `impacto_carbono_${new Date().toISOString().slice(0, 10)}.xlsx`
+    XLSX.writeFile(wb, fileName)
+  }
 
   return (
     <div className="app-bg">
@@ -180,7 +261,98 @@ export default function App() {
             {error}
           </div>
         )}
+        
+        <div className="card shadow-sm mt-4 result-card">
+          <div className="card-body">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h2 className="h5 mb-1">Resultado do cálculo</h2>
+                <div className="text-muted">Detalhamento por item e total da pegada de carbono.</div>
+              </div>
+              <div className="d-flex align-items-center gap-2">
+                {result?.calculatedAt && (
+                  <span className="badge text-bg-light">Calculado agora</span>
+                )}
+                <button
+                  className="btn btn-outline-dark btn-sm"
+                  onClick={exportToExcel}
+                  disabled={breakdown.length === 0}
+                >
+                  Exportar Excel
+                </button>
+              </div>
+            </div>
 
+            {!result ? (
+              <div className="text-muted mt-3">Nenhum cálculo realizado.</div>
+            ) : result.error ? (
+              <div className="alert alert-danger mt-3" role="alert">Falha ao calcular impacto.</div>
+            ) : (
+              <>
+                <div className="impact-total mt-3">
+                  <div className="impact-total__label">Pegada total</div>
+                  <div className="impact-total__value">{numberFmt.format(totalImpact)} kgCO₂eq</div>
+                  {typeof result.apiTotal === 'number' && (
+                    <div className="text-muted small">API: {numberFmt.format(result.apiTotal)} kgCO₂eq</div>
+                  )}
+                </div>
+
+                {breakdown.length > 0 && (
+                  <div className="chart-grid mt-4">
+                    <div className="card shadow-sm chart-card">
+                      <div className="card-body">
+                        <h3 className="h6">Impacto por item</h3>
+                        <div className="chart-box">
+                          <Bar data={barData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="card shadow-sm chart-card">
+                      <div className="card-body">
+                        <h3 className="h6">Maiores emissores</h3>
+                        <div className="chart-box">
+                          <Doughnut data={doughnutData} options={{ responsive: true, plugins: { legend: { position: 'bottom' } } }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="table-responsive mt-3">
+                  <table className="table table-hover align-middle">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th className="text-end">Quantidade</th>
+                        <th className="text-end">Coeficiente</th>
+                        <th className="text-end">Impacto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {breakdown.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="text-muted">Nenhum item no projeto.</td>
+                        </tr>
+                      ) : (
+                        breakdown.map((it) => (
+                          <tr key={`${it.id}-${it.nome}`}>
+                            <td>
+                              <div className="fw-semibold">{it.nome}</div>
+                              <div className="text-muted small">{it.id}</div>
+                            </td>
+                            <td className="text-end">{numberFmt.format(it.quantidade)} {it.unidade}</td>
+                            <td className="text-end">{numberFmt.format(it.fator)} kgCO₂eq/{it.unidade || '-'}</td>
+                            <td className="text-end fw-semibold">{numberFmt.format(it.impacto)} kgCO₂eq</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
         <div className="row g-4">
           <div className="col-12 col-lg-7">
             <div className="card shadow-sm mb-4">
@@ -399,19 +571,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="card shadow-sm mt-4">
-          <div className="card-body">
-            <h2 className="h5">Resultado</h2>
-            {!result ? (
-              <div className="text-muted">Nenhum cálculo realizado.</div>
-            ) : result.error ? (
-              <div className="alert alert-danger" role="alert">Falha ao calcular impacto.</div>
-            ) : (
-              <pre className="result-box">{JSON.stringify(result, null, 2)}</pre>
-            )}
           </div>
         </div>
       </div>

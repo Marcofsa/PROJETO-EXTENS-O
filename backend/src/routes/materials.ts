@@ -79,14 +79,19 @@ router.delete('/materials/:id', async (req, res) => {
 router.post('/calculate', async (req, res) => {
   try {
     const { items } = req.body
-    const ids = (items || []).map((i: any) => i.material_id).filter(Boolean)
+    const ids = (items || [])
+      .map((i: any) => i.material_id || i.materialId)
+      .filter(Boolean)
     let materialsList: any[] = []
     if (ids.length) {
       const placeholders = ids.map(() => '?').join(',')
       const result = await query(`SELECT id, pegada_carbono, unidade FROM materials WHERE id IN (${placeholders})`, ids)
       materialsList = result.rows
     }
-    const impact = calculateProjectImpact((items || []).map((it: any) => ({ materialId: it.material_id, quantidade: it.quantidade })), materialsList)
+    const impact = calculateProjectImpact(
+      (items || []).map((it: any) => ({ materialId: it.material_id || it.materialId, quantidade: it.quantidade })),
+      materialsList
+    )
     res.json(impact)
   } catch (err) {
     console.error(err)
