@@ -251,6 +251,9 @@ export default function App() {
     });
     setEditingId(m.id);
     setCrudError(null);
+    setCatalogOpen(false);
+    setMaterialsModalOpen(false);
+    window.setTimeout(() => setMaterialsModalOpen(true), 0);
   }
 
   async function saveMaterial() {
