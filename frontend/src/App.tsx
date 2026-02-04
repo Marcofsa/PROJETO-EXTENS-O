@@ -73,6 +73,8 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState<boolean>(false);
   const [materialsModalOpen, setMaterialsModalOpen] = useState<boolean>(false);
+  const [addItemModalOpen, setAddItemModalOpen] = useState<boolean>(false);
+  const [materialSearch, setMaterialSearch] = useState<string>("");
   const [materialForm, setMaterialForm] = useState({
     id: "",
     nome: "",
@@ -333,6 +335,11 @@ export default function App() {
     return byCategory && bySearch;
   });
   const selectedMaterial = materials.find((m) => m.id === selected);
+  const filteredMaterialOptions = materialSearch
+    ? materials.filter((m) =>
+        `${m.nome} ${m.id}`.toLowerCase().includes(materialSearch.toLowerCase()),
+      )
+    : materials;
   const totalItems = items.reduce((acc, it) => acc + it.quantidade, 0);
   const numberFmt = new Intl.NumberFormat("pt-BR", {
     maximumFractionDigits: 2,
@@ -691,53 +698,15 @@ export default function App() {
             <div className="col-12 col-lg-5">
               <div className="card shadow-sm mb-4">
                 <div className="card-body">
-                  <h2 className="h5">Adicionar item</h2>
-                  <div className="mb-2 text-muted">
-                    Selecione o material e informe a quantidade.
+                  <h2 className="h5">Projeto</h2>
+                  <div className="text-muted mb-3">
+                    Adicione itens ao projeto para calcular o impacto.
                   </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Material</label>
-                    <select
-                      className="form-select"
-                      value={selected}
-                      onChange={(e) => setSelected(e.target.value)}
-                    >
-                      <option value="">Selecione um material</option>
-                      {materials.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.nome} ({m.unidade})
-                        </option>
-                      ))}
-                    </select>
-                    {selectedMaterial && (
-                      <div className="form-text">
-                        Pegada: {selectedMaterial.pegada_carbono} kgCO₂eq /{" "}
-                        {selectedMaterial.unidade}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Quantidade</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={qty || ""}
-                      onChange={(e) => setQty(Number(e.target.value))}
-                      placeholder="0"
-                      min={0}
-                    />
-                  </div>
-
-                  {formError && (
-                    <div className="alert alert-warning py-2" role="alert">
-                      {formError}
-                    </div>
-                  )}
-
-                  <button className="btn btn-primary w-100" onClick={addItem}>
-                    Adicionar ao projeto
+                  <button
+                    className="btn btn-primary w-100"
+                    onClick={() => setAddItemModalOpen(true)}
+                  >
+                    Adicionar item ao projeto
                   </button>
                 </div>
               </div>
@@ -1048,6 +1017,92 @@ export default function App() {
                 Limpar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {addItemModalOpen && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Adicionar item ao projeto"
+          onClick={() => setAddItemModalOpen(false)}
+        >
+          <div className="modal-card modal-card--form" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+              <div>
+                <h2 className="h5 mb-1">Adicionar item</h2>
+                <div className="text-muted">
+                  Selecione o material e informe a quantidade.
+                </div>
+              </div>
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setAddItemModalOpen(false)}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Buscar material</label>
+              <input
+                className="form-control"
+                value={materialSearch}
+                onChange={(e) => setMaterialSearch(e.target.value)}
+                placeholder="Digite para buscar..."
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Selecionar no dropdown</label>
+              <select
+                className="form-select"
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+              >
+                <option value="">Selecione um material</option>
+                {filteredMaterialOptions.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nome} ({m.unidade})
+                  </option>
+                ))}
+              </select>
+              {selectedMaterial && (
+                <div className="form-text">
+                  Pegada: {selectedMaterial.pegada_carbono} kgCO₂eq /{" "}
+                  {selectedMaterial.unidade}
+                </div>
+              )}
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Quantidade</label>
+              <input
+                type="number"
+                className="form-control"
+                value={qty || ""}
+                onChange={(e) => setQty(Number(e.target.value))}
+                placeholder="0"
+                min={0}
+              />
+            </div>
+
+            {formError && (
+              <div className="alert alert-warning py-2" role="alert">
+                {formError}
+              </div>
+            )}
+
+            <button
+              className="btn btn-primary w-100"
+              onClick={() => {
+                addItem();
+                if (!formError) setAddItemModalOpen(false);
+              }}
+            >
+              Adicionar ao projeto
+            </button>
           </div>
         </div>
       )}
