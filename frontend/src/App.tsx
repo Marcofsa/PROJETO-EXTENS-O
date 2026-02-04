@@ -514,7 +514,7 @@ export default function App() {
               </div>
             </div>
             <div className="d-flex align-items-center gap-2">
-              <span className="badge text-bg-success">SQLite + API local</span>
+              <span className="badge text-bg-success">API ONLINE CLOUD</span>
               <span className={`badge connection-badge ${isOnline ? 'is-online' : 'is-offline'}`}>
                 <span className="connection-dot" />
                 {isOnline ? 'Online' : 'Offline'}
