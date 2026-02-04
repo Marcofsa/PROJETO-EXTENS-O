@@ -72,6 +72,7 @@ export default function App() {
   const [formError, setFormError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState<boolean>(false);
+  const [materialsModalOpen, setMaterialsModalOpen] = useState<boolean>(false);
   const [materialForm, setMaterialForm] = useState({
     id: "",
     nome: "",
@@ -495,15 +496,22 @@ export default function App() {
         </div>
       ) : (
         <div className="container py-4">
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 app-header">
             <div>
-              <h1 className="mb-1">Calculadora de Sustentabilidade</h1>
+              <h1 className="mb-1">Calculadora de Passo de Carbono</h1>
               <div className="text-muted">
                 Monte um projeto e estime impactos ambientais por material.
+              </div>
+              <div className="text-muted small mt-1">
+                Desenvolvido por Marcos Sá Filho para Ponto da Construção
               </div>
             </div>
             <div className="d-flex align-items-center gap-2">
               <span className="badge text-bg-success">SQLite + API local</span>
+              <span className={`badge connection-badge ${isOnline ? 'is-online' : 'is-offline'}`}>
+                <span className="connection-dot" />
+                {isOnline ? 'Online' : 'Offline'}
+              </span>
               <button
                 className="btn btn-outline-secondary btn-sm"
                 onClick={handleLogout}
@@ -653,128 +661,28 @@ export default function App() {
                 <div className="card-body">
                   <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
-                      <h2 className="h5 mb-1">Gerenciar materiais (CRUD)</h2>
+                      <h2 className="h5 mb-1">Materiais</h2>
                       <div className="text-muted">
-                        Cadastre o coeficiente de carbono para usar nos
-                        cálculos.
+                        Cadastre e gerencie os materiais usados nos cálculos.
                       </div>
                     </div>
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => setCatalogOpen(true)}
-                    >
-                      Ver catálogo
-                    </button>
-                  </div>
-
-                  <div className="row g-3">
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">ID</label>
-                      <input
-                        className="form-control"
-                        value={materialForm.id}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({ ...s, id: e.target.value }))
-                        }
-                        placeholder="ex: madeira_certificada"
-                        disabled={!!editingId}
-                      />
-                    </div>
-                    <div className="col-12 col-md-8">
-                      <label className="form-label">Nome</label>
-                      <input
-                        className="form-control"
-                        value={materialForm.nome}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({
-                            ...s,
-                            nome: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">Categoria</label>
-                      <input
-                        className="form-control"
-                        value={materialForm.categoria}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({
-                            ...s,
-                            categoria: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">Unidade</label>
-                      <input
-                        className="form-control"
-                        value={materialForm.unidade}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({
-                            ...s,
-                            unidade: e.target.value,
-                          }))
-                        }
-                        placeholder="m², kg, m³..."
-                      />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">Coef. carbono</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={materialForm.pegada_carbono}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({
-                            ...s,
-                            pegada_carbono: e.target.value,
-                          }))
-                        }
-                        placeholder="kgCO₂eq / unidade"
-                        min={0}
-                      />
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <label className="form-label">Custo unitário</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={materialForm.custo_unitario}
-                        onChange={(e) =>
-                          setMaterialForm((s) => ({
-                            ...s,
-                            custo_unitario: e.target.value,
-                          }))
-                        }
-                        placeholder="opcional"
-                        min={0}
-                      />
+                    <div className="d-flex gap-2 flex-wrap">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => setMaterialsModalOpen(true)}
+                      >
+                        Adicionar um material
+                      </button>
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => setCatalogOpen(true)}
+                      >
+                        Ver catálogo
+                      </button>
                     </div>
                   </div>
-
-                  {crudError && (
-                    <div className="alert alert-warning mt-3" role="alert">
-                      {crudError}
-                    </div>
-                  )}
-
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-primary"
-                      onClick={saveMaterial}
-                      disabled={saving}
-                    >
-                      {editingId ? "Atualizar material" : "Salvar material"}
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={resetForm}
-                      disabled={saving}
-                    >
-                      Limpar
-                    </button>
+                  <div className="text-muted small mt-3">
+                    Use o catálogo para consultar e editar materiais e o botão de adicionar para criar um item.
                   </div>
                 </div>
               </div>
@@ -909,8 +817,9 @@ export default function App() {
           role="dialog"
           aria-modal="true"
           aria-label="Catálogo de materiais"
+          onClick={() => setCatalogOpen(false)}
         >
-          <div className="modal-card">
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
               <div>
                 <h2 className="h5 mb-1">Catálogo de Materiais</h2>
@@ -1002,6 +911,142 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+      {materialsModalOpen && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gerenciar materiais"
+          onClick={() => setMaterialsModalOpen(false)}
+        >
+          <div className="modal-card modal-card--form" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+              <div>
+                <h2 className="h5 mb-1">Gerenciar Materiais</h2>
+                <div className="text-muted">
+                  Cadastre o coeficiente de carbono para usar nos cálculos.
+                </div>
+              </div>
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setMaterialsModalOpen(false)}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="row g-3">
+              <div className="col-12 col-md-4">
+                <label className="form-label">ID (Nome único)</label>
+                <input
+                  className="form-control"
+                  value={materialForm.id}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({ ...s, id: e.target.value }))
+                  }
+                  placeholder="ex: madeira_certificada"
+                  disabled={!!editingId}
+                />
+              </div>
+              <div className="col-12 col-md-8">
+                <label className="form-label">Nome</label>
+                <input
+                  className="form-control"
+                  value={materialForm.nome}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({
+                      ...s,
+                      nome: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="col-12 col-md-4">
+                <label className="form-label">Categoria</label>
+                <input
+                  className="form-control"
+                  value={materialForm.categoria}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({
+                      ...s,
+                      categoria: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="col-12 col-md-4">
+                <label className="form-label">Unidade</label>
+                <input
+                  className="form-control"
+                  value={materialForm.unidade}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({
+                      ...s,
+                      unidade: e.target.value,
+                    }))
+                  }
+                  placeholder="m², kg, m³..."
+                />
+              </div>
+              <div className="col-12 col-md-4">
+                <label className="form-label">Coef. carbono</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={materialForm.pegada_carbono}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({
+                      ...s,
+                      pegada_carbono: e.target.value,
+                    }))
+                  }
+                  placeholder="kgCO₂eq / unidade"
+                  min={0}
+                />
+              </div>
+              <div className="col-12 col-md-4">
+                <label className="form-label">Custo unitário</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={materialForm.custo_unitario}
+                  onChange={(e) =>
+                    setMaterialForm((s) => ({
+                      ...s,
+                      custo_unitario: e.target.value,
+                    }))
+                  }
+                  placeholder="opcional"
+                  min={0}
+                />
+              </div>
+            </div>
+
+            {crudError && (
+              <div className="alert alert-warning mt-3" role="alert">
+                {crudError}
+              </div>
+            )}
+
+            <div className="d-flex gap-2 mt-3">
+              <button
+                className="btn btn-primary"
+                onClick={saveMaterial}
+                disabled={saving}
+              >
+                {editingId ? "Atualizar material" : "Salvar material"}
+              </button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={resetForm}
+                disabled={saving}
+              >
+                Limpar
+              </button>
             </div>
           </div>
         </div>
