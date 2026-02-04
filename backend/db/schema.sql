@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS materials (
   categoria TEXT,
   subcategoria TEXT,
   fornecedor_id INTEGER REFERENCES suppliers(id),
+  user_id INTEGER REFERENCES users(id),
   unidade TEXT,
   pegada_carbono REAL,
   energia_incorporada REAL,
@@ -68,5 +69,15 @@ CREATE TABLE IF NOT EXISTS project_items (
   criado_em TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  is_admin INTEGER NOT NULL DEFAULT 0,
+  criado_em TEXT DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_material_categoria ON materials(categoria);
 CREATE INDEX IF NOT EXISTS idx_project_items_project ON project_items(project_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_materials_user_id ON materials(user_id);
