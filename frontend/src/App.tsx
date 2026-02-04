@@ -348,13 +348,13 @@ export default function App() {
                       ) : (
                         breakdown.map((it) => (
                           <tr key={`${it.id}-${it.nome}`}>
-                            <td>
+                            <td data-label="Item">
                               <div className="fw-semibold">{it.nome}</div>
                               <div className="text-muted small">{it.id}</div>
                             </td>
-                            <td className="text-end">{numberFmt.format(it.quantidade)} {it.unidade}</td>
-                            <td className="text-end">{numberFmt.format(it.fator)} kgCO₂eq/{it.unidade || '-'}</td>
-                            <td className="text-end fw-semibold">{numberFmt.format(it.impacto)} kgCO₂eq</td>
+                            <td className="text-end" data-label="Quantidade">{numberFmt.format(it.quantidade)} {it.unidade}</td>
+                            <td className="text-end" data-label="Coeficiente">{numberFmt.format(it.fator)} kgCO₂eq/{it.unidade || '-'}</td>
+                            <td className="text-end fw-semibold" data-label="Impacto">{numberFmt.format(it.impacto)} kgCO₂eq</td>
                           </tr>
                         ))
                       )}
@@ -569,11 +569,11 @@ export default function App() {
                   )}
                   {filteredMaterials.map((m) => (
                     <tr key={m.id}>
-                      <td>{m.nome}</td>
-                      <td className="text-muted">{m.categoria || '-'}</td>
-                      <td className="text-end">{m.pegada_carbono}</td>
-                      <td className="text-end">{m.unidade}</td>
-                      <td className="text-end">
+                      <td data-label="Material">{m.nome}</td>
+                      <td className="text-muted" data-label="Categoria">{m.categoria || '-'}</td>
+                      <td className="text-end" data-label="Pegada">{m.pegada_carbono}</td>
+                      <td className="text-end" data-label="Unidade">{m.unidade}</td>
+                      <td className="text-end" data-label="Ações">
                         <div className="btn-group btn-group-sm" role="group">
                           <button className="btn btn-outline-primary" onClick={() => startEdit(m)}>Editar</button>
                           <button className="btn btn-outline-danger" onClick={() => deleteMaterial(m.id)}>Excluir</button>
