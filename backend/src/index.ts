@@ -1,3 +1,4 @@
+import path from 'path'
 import express from 'express'
 import cors from 'cors'
 import materialsRouter from './routes/materials'
@@ -16,12 +17,15 @@ app.use(express.json())
 app.use('/api', materialsRouter)
 app.use('/api', projectsRouter)
 
-app.get('/', (_req, res) => {
-  res.send('Backend is running. Use /api for API endpoints.')
-})
-
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
+})
+
+const frontendPath = path.join(__dirname, '../../frontend/dist')
+app.use(express.static(frontendPath))
+
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'))
 })
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000

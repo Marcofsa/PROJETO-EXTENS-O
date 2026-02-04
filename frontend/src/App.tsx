@@ -25,6 +25,11 @@ type Material = {
 export default function App() {
   const apiBase = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
   const apiUrl = (path: string) => `${apiBase}${path}`
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = window.localStorage.getItem('theme')
+    if (stored === 'dark' || stored === 'light') return stored
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -67,6 +72,11 @@ export default function App() {
   useEffect(() => {
     loadMaterials()
   }, [])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    window.localStorage.setItem('theme', theme)
+  }, [theme])
 
   function addItem() {
     if (!selected || !qty || qty <= 0) {
@@ -276,7 +286,7 @@ export default function App() {
                   <span className="badge text-bg-light">Calculado agora</span>
                 )}
                 <button
-                  className="btn btn-outline-dark btn-sm"
+                  className="btn btn-outline-dark btn-sm export-btn"
                   onClick={exportToExcel}
                   disabled={breakdown.length === 0}
                 >
@@ -433,68 +443,6 @@ export default function App() {
               </div>
             </div>
 
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                  <h2 className="h5 mb-0">Catálogo de Materiais</h2>
-                  {loading && <span className="spinner-border spinner-border-sm text-secondary" aria-hidden="true" />}
-                </div>
-
-                <div className="row g-2 mb-3">
-                  <div className="col-12 col-md-7">
-                    <input
-                      className="form-control"
-                      placeholder="Buscar material..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                  <div className="col-12 col-md-5">
-                    <select className="form-select" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-                      <option value="">Todas as categorias</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="table-responsive">
-                  <table className="table table-sm align-middle">
-                    <thead>
-                      <tr>
-                        <th>Material</th>
-                        <th>Categoria</th>
-                        <th className="text-end">Pegada</th>
-                        <th className="text-end">Unidade</th>
-                        <th className="text-end">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredMaterials.length === 0 && !loading && (
-                        <tr>
-                          <td colSpan={5} className="text-muted">Nenhum material encontrado.</td>
-                        </tr>
-                      )}
-                      {filteredMaterials.map((m) => (
-                        <tr key={m.id}>
-                          <td>{m.nome}</td>
-                          <td className="text-muted">{m.categoria || '-'}</td>
-                          <td className="text-end">{m.pegada_carbono}</td>
-                          <td className="text-end">{m.unidade}</td>
-                          <td className="text-end">
-                            <div className="btn-group btn-group-sm" role="group">
-                              <button className="btn btn-outline-primary" onClick={() => startEdit(m)}>Editar</button>
-                              <button className="btn btn-outline-danger" onClick={() => deleteMaterial(m.id)}>Excluir</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="col-12 col-lg-5">
@@ -575,7 +523,78 @@ export default function App() {
             </div>
           </div>
         </div>
+        <div className="section-label">Catálogo</div>
+        <div className="card shadow-sm mt-2 catalog-card catalog-card--wide">
+          <div className="card-body">
+            <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+              <h2 className="h5 mb-0">Catálogo de Materiais</h2>
+              {loading && <span className="spinner-border spinner-border-sm text-secondary" aria-hidden="true" />}
+            </div>
+
+            <div className="row g-2 mb-3">
+              <div className="col-12 col-md-7">
+                <input
+                  className="form-control"
+                  placeholder="Buscar material..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="col-12 col-md-5">
+                <select className="form-select" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                  <option value="">Todas as categorias</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="table-responsive">
+              <table className="table table-sm align-middle catalog-table">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Categoria</th>
+                    <th className="text-end">Pegada</th>
+                    <th className="text-end">Unidade</th>
+                    <th className="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMaterials.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={5} className="text-muted">Nenhum material encontrado.</td>
+                    </tr>
+                  )}
+                  {filteredMaterials.map((m) => (
+                    <tr key={m.id}>
+                      <td>{m.nome}</td>
+                      <td className="text-muted">{m.categoria || '-'}</td>
+                      <td className="text-end">{m.pegada_carbono}</td>
+                      <td className="text-end">{m.unidade}</td>
+                      <td className="text-end">
+                        <div className="btn-group btn-group-sm" role="group">
+                          <button className="btn btn-outline-primary" onClick={() => startEdit(m)}>Editar</button>
+                          <button className="btn btn-outline-danger" onClick={() => deleteMaterial(m.id)}>Excluir</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
+      <button
+        className="btn floating-theme-toggle"
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+        title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+      >
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
     </div>
   )
 }
