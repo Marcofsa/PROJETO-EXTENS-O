@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pe-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: yarn; yarn build
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+
+  - type: web
+    name: pe-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: yarn; yarn build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE
+        value: https://pe-backend.onrender.com

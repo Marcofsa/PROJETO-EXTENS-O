@@ -23,6 +23,8 @@ type Material = {
 }
 
 export default function App() {
+  const apiBase = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
+  const apiUrl = (path: string) => `${apiBase}${path}`
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,7 +50,7 @@ export default function App() {
   async function loadMaterials() {
     setLoading(true)
     try {
-      const r = await fetch('/api/materials')
+      const r = await fetch(apiUrl('/api/materials'))
       if (!r.ok) throw new Error('fetch_error')
       const data = await r.json()
       setMaterials(data)
@@ -78,7 +80,7 @@ export default function App() {
 
   async function calculate() {
     try {
-      const res = await fetch('/api/calculate', {
+      const res = await fetch(apiUrl('/api/calculate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items })
@@ -132,14 +134,14 @@ export default function App() {
     setSaving(true)
     try {
       if (editingId) {
-        const res = await fetch(`/api/materials/${editingId}`, {
+        const res = await fetch(apiUrl(`/api/materials/${editingId}`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
         if (!res.ok) throw new Error('update_error')
       } else {
-        const res = await fetch('/api/materials', {
+        const res = await fetch(apiUrl('/api/materials'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -160,7 +162,7 @@ export default function App() {
   async function deleteMaterial(id: string) {
     if (!window.confirm('Remover este material?')) return
     try {
-      const res = await fetch(`/api/materials/${id}`, { method: 'DELETE' })
+      const res = await fetch(apiUrl(`/api/materials/${id}`), { method: 'DELETE' })
       if (!res.ok) throw new Error('delete_error')
       await loadMaterials()
     } catch (e) {
