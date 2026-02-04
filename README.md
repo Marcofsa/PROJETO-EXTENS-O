@@ -2,6 +2,9 @@
 
 Scaffold inicial com frontend React + TypeScript (Vite) e backend Node.js + TypeScript (Express) usando SQLite.
 
+Documentação:
+- Usabilidade: [docs/USABILIDADE.md](docs/USABILIDADE.md)
+
 Run (development):
 
 1) Frontend
