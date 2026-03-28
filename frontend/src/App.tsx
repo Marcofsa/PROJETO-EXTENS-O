@@ -63,6 +63,140 @@ function StatCard({
   );
 }
 
+function AppIcon({
+  name,
+}: {
+  name:
+    | "add"
+    | "login"
+    | "register"
+    | "logout"
+    | "download"
+    | "catalog"
+    | "project"
+    | "calculate"
+    | "clear"
+    | "close"
+    | "edit"
+    | "delete"
+    | "save"
+    | "reset"
+    | "sun"
+    | "moon";
+}) {
+  const common = {
+    className: "btn-icon",
+    viewBox: "0 0 16 16",
+    fill: "currentColor",
+    "aria-hidden": true,
+  };
+
+  switch (name) {
+    case "add":
+      return (
+        <svg {...common}>
+          <path d="M8 3a.5.5 0 0 1 .5.5v4h4a.5.5 0 0 1 0 1h-4v4a.5.5 0 0 1-1 0v-4h-4a.5.5 0 0 1 0-1h4v-4A.5.5 0 0 1 8 3Z" />
+        </svg>
+      );
+    case "login":
+      return (
+        <svg {...common}>
+          <path d="M6 2.5A1.5 1.5 0 0 0 4.5 4v8A1.5 1.5 0 0 0 6 13.5h3a.5.5 0 0 0 0-1H6A.5.5 0 0 1 5.5 12V4A.5.5 0 0 1 6 3.5h3a.5.5 0 0 0 0-1H6Z" />
+          <path d="M10.854 8.354a.5.5 0 0 0 0-.708L9.207 6a.5.5 0 1 0-.707.707L9.293 7.5H7a.5.5 0 0 0 0 1h2.293l-.793.793a.5.5 0 0 0 .707.707l1.647-1.646Z" />
+        </svg>
+      );
+    case "register":
+      return (
+        <svg {...common}>
+          <path d="M8 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm0 1c-2.33 0-4 1.17-4 2.5 0 .28.22.5.5.5h7a.5.5 0 0 0 .5-.5C12 10.17 10.33 9 8 9Z" />
+          <path d="M12.5 3.5a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0V6h-1a.5.5 0 0 1 0-1h1V4a.5.5 0 0 1 .5-.5Z" />
+        </svg>
+      );
+    case "logout":
+      return (
+        <svg {...common}>
+          <path d="M9 2.5a.5.5 0 0 1 .5-.5h2A1.5 1.5 0 0 1 13 3.5v9A1.5 1.5 0 0 1 11.5 14h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-2A.5.5 0 0 1 9 2.5Z" />
+          <path d="M7.5 11.354a.5.5 0 0 0 .707-.708L7.414 9.854H10.5a.5.5 0 0 0 0-1H7.414l.793-.792a.5.5 0 1 0-.707-.708l-1.647 1.647a.5.5 0 0 0 0 .707L7.5 11.354Z" />
+        </svg>
+      );
+    case "download":
+      return (
+        <svg {...common}>
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5V12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1.6a.5.5 0 0 1 1 0V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-1.6a.5.5 0 0 1 .5-.5Z" />
+          <path d="M7.646 10.354a.5.5 0 0 0 .708 0l2.5-2.5a.5.5 0 0 0-.708-.708L8.5 8.793V2.5a.5.5 0 0 0-1 0v6.293L5.854 7.146a.5.5 0 1 0-.708.708l2.5 2.5Z" />
+        </svg>
+      );
+    case "catalog":
+      return (
+        <svg {...common}>
+          <path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h8A1.5 1.5 0 0 1 13 3.5v9a.5.5 0 0 1-.777.416L10.5 11.77l-1.723 1.146A.5.5 0 0 1 8 12.5V3H3.5a.5.5 0 0 0-.5.5v9A.5.5 0 0 0 3.5 13H7a.5.5 0 0 1 0 1H3.5A1.5 1.5 0 0 1 2 12.5v-9Z" />
+        </svg>
+      );
+    case "project":
+      return (
+        <svg {...common}>
+          <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v7A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 3h-3.793l-.853-.854A.5.5 0 0 0 8.5 2h-1a.5.5 0 0 0-.354.146L6.293 3H2.5Z" />
+        </svg>
+      );
+    case "calculate":
+      return (
+        <svg {...common}>
+          <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 13.5 1h-11ZM3 3h10v2H3V3Zm1 4h2v2H4V7Zm3 0h2v2H7V7Zm3 0h2v2h-2V7ZM4 10h2v2H4v-2Zm3 0h5v2H7v-2Z" />
+        </svg>
+      );
+    case "clear":
+      return (
+        <svg {...common}>
+          <path d="M5.5 5.5A.5.5 0 0 1 6 5h5a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5Zm-2 2A.5.5 0 0 1 4 7h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5Zm-1 2A.5.5 0 0 1 3 9h8a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5Zm9.854-5.146a.5.5 0 0 0-.708-.708L2.146 13.146a.5.5 0 1 0 .708.708l9.5-9.5Z" />
+        </svg>
+      );
+    case "close":
+      return (
+        <svg {...common}>
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708Z" />
+        </svg>
+      );
+    case "edit":
+      return (
+        <svg {...common}>
+          <path d="M12.854 1.146a.5.5 0 0 1 0 .708l-1 1-2-2 1-1a.5.5 0 0 1 .708 0l1.292 1.292ZM9.146 1.854l2 2-6.793 6.793L2 11l.354-2.353 6.792-6.793Z" />
+          <path d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a.5.5 0 0 0 0-1h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 0-1 0v11Z" />
+        </svg>
+      );
+    case "delete":
+      return (
+        <svg {...common}>
+          <path d="M5.5 5.5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v5a.5.5 0 0 0 1 0V6Z" />
+          <path d="M14.5 3a1 1 0 0 1-1 1H13v8.5A1.5 1.5 0 0 1 11.5 14h-7A1.5 1.5 0 0 1 3 12.5V4h-.5a1 1 0 1 1 0-2H5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1h2.5a1 1 0 0 1 1 1ZM6 2v0h4V2H6Z" />
+        </svg>
+      );
+    case "save":
+      return (
+        <svg {...common}>
+          <path d="M2 2.5A1.5 1.5 0 0 1 3.5 1h7.793a1.5 1.5 0 0 1 1.06.44l1.207 1.207a1.5 1.5 0 0 1 .44 1.06v8.793A1.5 1.5 0 0 1 12.5 14h-9A1.5 1.5 0 0 1 2 12.5v-10ZM4 2v3h6V2H4Zm0 7.5A1.5 1.5 0 0 1 5.5 8h5A1.5 1.5 0 0 1 12 9.5v3A1.5 1.5 0 0 1 10.5 14h-5A1.5 1.5 0 0 1 4 12.5v-3Z" />
+        </svg>
+      );
+    case "reset":
+      return (
+        <svg {...common}>
+          <path d="M8 3a5 5 0 1 1-4.546 2.916.5.5 0 1 1 .908.418A4 4 0 1 0 8 4a3.98 3.98 0 0 0-2.828 1.172L6.5 6.5H3V3l1.466 1.466A4.978 4.978 0 0 1 8 3Z" />
+        </svg>
+      );
+    case "sun":
+      return (
+        <svg {...common}>
+          <path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM8 0a.5.5 0 0 1 .5.5V2a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 8 0Zm0 14a.5.5 0 0 1 .5.5V16a.5.5 0 0 1-1 0v-1.5A.5.5 0 0 1 8 14Zm8-6a.5.5 0 0 1-.5.5H14a.5.5 0 0 1 0-1h1.5A.5.5 0 0 1 16 8ZM2 8a.5.5 0 0 1-.5.5H0a.5.5 0 0 1 0-1h1.5A.5.5 0 0 1 2 8Zm11.657-4.95a.5.5 0 0 1 0 .707l-1.06 1.061a.5.5 0 0 1-.708-.708l1.061-1.06a.5.5 0 0 1 .707 0Zm-9.9 9.9a.5.5 0 0 1 0 .707l-1.06 1.061a.5.5 0 1 1-.708-.708l1.061-1.06a.5.5 0 0 1 .707 0Zm9.9 1.768a.5.5 0 0 1-.707 0l-1.061-1.06a.5.5 0 1 1 .708-.708l1.06 1.061a.5.5 0 0 1 0 .707Zm-9.9-9.9a.5.5 0 0 1-.707 0L1.99 3.757a.5.5 0 1 1 .708-.707l1.06 1.06a.5.5 0 0 1 0 .708Z" />
+        </svg>
+      );
+    case "moon":
+      return (
+        <svg {...common}>
+          <path d="M6 0a.5.5 0 0 1 .49.598A6.5 6.5 0 1 0 13.402 9.51a.5.5 0 0 1 .608.608A7.5 7.5 0 1 1 5.882-.01.5.5 0 0 1 6 0Z" />
+        </svg>
+      );
+  }
+}
+
 function AppSection({
   eyebrow,
   title,
@@ -600,11 +734,16 @@ export default function App() {
                   type="submit"
                   disabled={authLoading}
                 >
-                  {authLoading
-                    ? "Aguarde..."
-                    : authMode === "register"
-                      ? "Criar conta"
-                      : "Entrar"}
+                  <span className="btn-label">
+                    <AppIcon
+                      name={authMode === "register" ? "register" : "login"}
+                    />
+                    {authLoading
+                      ? "Aguarde..."
+                      : authMode === "register"
+                        ? "Criar conta"
+                        : "Entrar"}
+                  </span>
                 </button>
               </form>
 
@@ -615,9 +754,14 @@ export default function App() {
                   setAuthMode(authMode === "login" ? "register" : "login")
                 }
               >
+                <span className="btn-label">
+                  <AppIcon
+                    name={authMode === "login" ? "register" : "login"}
+                  />
                 {authMode === "login"
                   ? "Ainda nao tem conta? Cadastre-se"
                   : "Ja tem conta? Entrar"}
+                </span>
               </button>
             </section>
           </div>
@@ -659,13 +803,19 @@ export default function App() {
                   className="btn btn-light"
                   onClick={() => setAddItemModalOpen(true)}
                 >
-                  Novo item
+                  <span className="btn-label">
+                    <AppIcon name="add" />
+                    Novo item
+                  </span>
                 </button>
                 <button
                   className="btn btn-outline-light hero-logout"
                   onClick={handleLogout}
                 >
-                  Sair
+                  <span className="btn-label">
+                    <AppIcon name="logout" />
+                    Sair
+                  </span>
                 </button>
               </div>
             </div>
@@ -707,7 +857,10 @@ export default function App() {
                     onClick={exportToExcel}
                     disabled={breakdown.length === 0}
                   >
-                    Exportar Excel
+                    <span className="btn-label">
+                      <AppIcon name="download" />
+                      Exportar Excel
+                    </span>
                   </button>
                 }
               >
@@ -843,13 +996,19 @@ export default function App() {
                       className="btn btn-primary btn-sm"
                       onClick={() => setMaterialsModalOpen(true)}
                     >
-                      Novo material
+                      <span className="btn-label">
+                        <AppIcon name="add" />
+                        Novo material
+                      </span>
                     </button>
                     <button
                       className="btn btn-outline-primary btn-sm"
                       onClick={() => setCatalogOpen(true)}
                     >
-                      Abrir catalogo
+                      <span className="btn-label">
+                        <AppIcon name="catalog" />
+                        Abrir catalogo
+                      </span>
                     </button>
                   </div>
                 }
@@ -906,7 +1065,10 @@ export default function App() {
                     className="btn btn-primary btn-sm"
                     onClick={() => setAddItemModalOpen(true)}
                   >
-                    Adicionar item
+                    <span className="btn-label">
+                      <AppIcon name="project" />
+                      Adicionar item
+                    </span>
                   </button>
                 }
               >
@@ -958,7 +1120,10 @@ export default function App() {
                               className="btn btn-outline-danger btn-sm"
                               onClick={() => removeItem(index)}
                             >
-                              Remover
+                              <span className="btn-label">
+                                <AppIcon name="delete" />
+                                Remover
+                              </span>
                             </button>
                           </div>
                         </div>
@@ -973,14 +1138,20 @@ export default function App() {
                     onClick={calculate}
                     disabled={items.length === 0}
                   >
-                    Calcular impacto
+                    <span className="btn-label">
+                      <AppIcon name="calculate" />
+                      Calcular impacto
+                    </span>
                   </button>
                   <button
                     className="btn btn-outline-secondary flex-fill"
                     onClick={() => setItems([])}
                     disabled={items.length === 0}
                   >
-                    Limpar
+                    <span className="btn-label">
+                      <AppIcon name="clear" />
+                      Limpar
+                    </span>
                   </button>
                 </div>
               </AppSection>
@@ -1034,7 +1205,10 @@ export default function App() {
                 className="btn btn-outline-secondary btn-sm"
                 onClick={() => setCatalogOpen(false)}
               >
-                Fechar
+                <span className="btn-label">
+                  <AppIcon name="close" />
+                  Fechar
+                </span>
               </button>
             </div>
 
@@ -1100,13 +1274,19 @@ export default function App() {
                             className="btn btn-outline-primary"
                             onClick={() => startEdit(material)}
                           >
-                            Editar
+                            <span className="btn-label">
+                              <AppIcon name="edit" />
+                              Editar
+                            </span>
                           </button>
                           <button
                             className="btn btn-outline-danger"
                             onClick={() => deleteMaterial(material.id)}
                           >
-                            Excluir
+                            <span className="btn-label">
+                              <AppIcon name="delete" />
+                              Excluir
+                            </span>
                           </button>
                         </div>
                       </td>
@@ -1142,7 +1322,10 @@ export default function App() {
                 className="btn btn-outline-secondary btn-sm"
                 onClick={() => setMaterialsModalOpen(false)}
               >
-                Fechar
+                <span className="btn-label">
+                  <AppIcon name="close" />
+                  Fechar
+                </span>
               </button>
             </div>
 
@@ -1245,14 +1428,20 @@ export default function App() {
                 onClick={saveMaterial}
                 disabled={saving}
               >
-                {editingId ? "Atualizar material" : "Salvar material"}
+                <span className="btn-label">
+                  <AppIcon name="save" />
+                  {editingId ? "Atualizar material" : "Salvar material"}
+                </span>
               </button>
               <button
                 className="btn btn-outline-secondary"
                 onClick={resetForm}
                 disabled={saving}
               >
-                Limpar
+                <span className="btn-label">
+                  <AppIcon name="reset" />
+                  Limpar
+                </span>
               </button>
             </div>
           </div>
@@ -1282,7 +1471,10 @@ export default function App() {
                 className="btn btn-outline-secondary btn-sm"
                 onClick={() => setAddItemModalOpen(false)}
               >
-                Fechar
+                <span className="btn-label">
+                  <AppIcon name="close" />
+                  Fechar
+                </span>
               </button>
             </div>
 
@@ -1343,7 +1535,10 @@ export default function App() {
                 if (added) setAddItemModalOpen(false);
               }}
             >
-              Adicionar ao projeto
+              <span className="btn-label">
+                <AppIcon name="project" />
+                Adicionar ao projeto
+              </span>
             </button>
           </div>
         </div>
@@ -1357,7 +1552,10 @@ export default function App() {
         }
         title={theme === "dark" ? "Tema claro" : "Tema escuro"}
       >
-        {theme === "dark" ? "Light" : "Dark"}
+        <span className="btn-label">
+          <AppIcon name={theme === "dark" ? "sun" : "moon"} />
+          {theme === "dark" ? "Light" : "Dark"}
+        </span>
       </button>
     </div>
   );

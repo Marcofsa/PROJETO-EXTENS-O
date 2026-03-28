@@ -633,6 +633,28 @@ textarea {
   padding: 0 18px;
 }
 
+.btn-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.btn-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.btn-sm .btn-label {
+  gap: 8px;
+}
+
+.btn-link .btn-label {
+  justify-content: flex-start;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--brand), #d97706);
   border: none;
