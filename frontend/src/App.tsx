@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
   ArcElement,
-  Tooltip,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
   Legend,
+  LinearScale,
+  Tooltip,
 } from "chart.js";
 
 ChartJS.register(
@@ -35,6 +35,62 @@ type User = {
   is_admin?: boolean;
 };
 
+type ProjectItem = {
+  materialId: string;
+  quantidade: number;
+};
+
+type ResultState = {
+  apiTotal?: number;
+  error?: string;
+  calculatedAt?: string;
+} | null;
+
+function StatCard({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "accent" | "success";
+}) {
+  return (
+    <div className={`stat-card stat-card--${tone}`}>
+      <span className="stat-card__label">{label}</span>
+      <strong className="stat-card__value">{value}</strong>
+    </div>
+  );
+}
+
+function AppSection({
+  eyebrow,
+  title,
+  description,
+  actions,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="surface-panel">
+      <div className="section-head">
+        <div>
+          <span className="section-eyebrow">{eyebrow}</span>
+          <h2>{title}</h2>
+          <p>{description}</p>
+        </div>
+        {actions && <div className="section-actions">{actions}</div>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function App() {
   const apiBase = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
   const apiUrl = (path: string) => `${apiBase}${path}`;
@@ -57,16 +113,10 @@ export default function App() {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [crudError, setCrudError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
-  const [items, setItems] = useState<
-    { materialId: string; quantidade: number }[]
-  >([]);
+  const [items, setItems] = useState<ProjectItem[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [qty, setQty] = useState<number>(0);
-  const [result, setResult] = useState<{
-    apiTotal?: number;
-    error?: string;
-    calculatedAt?: string;
-  } | null>(null);
+  const [result, setResult] = useState<ResultState>(null);
   const [search, setSearch] = useState<string>("");
   const [categoria, setCategoria] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -92,15 +142,15 @@ export default function App() {
         userId: String(user.id),
         isAdmin: String(Boolean(user.is_admin)),
       });
-      const r = await fetch(apiUrl(`/api/materials?${qs.toString()}`));
-      if (!r.ok) throw new Error("fetch_error");
-      const data = await r.json();
+      const response = await fetch(apiUrl(`/api/materials?${qs.toString()}`));
+      if (!response.ok) throw new Error("fetch_error");
+      const data = await response.json();
       setMaterials(data);
       setError(null);
-    } catch (e) {
-      console.error(e);
+    } catch (loadError) {
+      console.error(loadError);
       setMaterials([]);
-      setError("Falha ao carregar materiais");
+      setError("Falha ao carregar materiais.");
     } finally {
       setLoading(false);
     }
@@ -118,32 +168,31 @@ export default function App() {
   useEffect(() => {
     const onOnline = () => setIsOnline(true);
     const onOffline = () => setIsOnline(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
     return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
     };
   }, []);
 
   useEffect(() => {
-    if (catalogOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    const anyModalOpen = catalogOpen || materialsModalOpen || addItemModalOpen;
+    document.body.style.overflow = anyModalOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [catalogOpen]);
+  }, [catalogOpen, materialsModalOpen, addItemModalOpen]);
 
   async function handleAuthSubmit(e: React.FormEvent) {
     e.preventDefault();
     setAuthError(null);
+
     if (!authEmail || !authPassword) {
       setAuthError("Preencha email e senha.");
       return;
     }
+
     if (authPassword.length < 6) {
       setAuthError("A senha deve ter ao menos 6 caracteres.");
       return;
@@ -153,22 +202,24 @@ export default function App() {
     try {
       const endpoint =
         authMode === "register" ? "/api/auth/register" : "/api/auth/login";
-      const res = await fetch(apiUrl(endpoint), {
+      const response = await fetch(apiUrl(endpoint), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authEmail, password: authPassword }),
       });
-      if (!res.ok) {
-        if (res.status === 409) throw new Error("email_exists");
-        if (res.status === 401) throw new Error("invalid_credentials");
+
+      if (!response.ok) {
+        if (response.status === 409) throw new Error("email_exists");
+        if (response.status === 401) throw new Error("invalid_credentials");
         throw new Error("auth_error");
       }
-      const data = await res.json();
+
+      const data = await response.json();
       setUser(data);
       setAuthEmail("");
       setAuthPassword("");
-    } catch (err: any) {
-      const code = String(err?.message || "");
+    } catch (submitError: any) {
+      const code = String(submitError?.message || "");
       if (code === "email_exists") setAuthError("Email já cadastrado.");
       else if (code === "invalid_credentials")
         setAuthError("Email ou senha inválidos.");
@@ -180,38 +231,45 @@ export default function App() {
 
   function handleLogout() {
     setUser(null);
+    setItems([]);
+    setResult(null);
   }
 
   function addItem() {
     if (!selected || !qty || qty <= 0) {
       setFormError("Selecione um material e informe uma quantidade válida.");
-      return;
+      return false;
     }
-    setItems((s) => [...s, { materialId: selected, quantidade: qty }]);
+
+    setItems((state) => [...state, { materialId: selected, quantidade: qty }]);
     setQty(0);
+    setSelected("");
+    setMaterialSearch("");
     setFormError(null);
+    return true;
   }
 
   async function calculate() {
     try {
-      const res = await fetch(apiUrl("/api/calculate"), {
+      const response = await fetch(apiUrl("/api/calculate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),
       });
-      if (!res.ok) throw new Error("calc_error");
-      const data = await res.json();
+      if (!response.ok) throw new Error("calc_error");
+      const data = await response.json();
       setResult({
         apiTotal: data?.pegada_carbono_kg,
         calculatedAt: new Date().toISOString(),
       });
-    } catch (err) {
+    } catch (calcError) {
+      console.error(calcError);
       setResult({ error: "network_error" });
     }
   }
 
   function removeItem(index: number) {
-    setItems((s) => s.filter((_, i) => i !== index));
+    setItems((state) => state.filter((_, itemIndex) => itemIndex !== index));
   }
 
   function resetForm() {
@@ -227,16 +285,16 @@ export default function App() {
     setCrudError(null);
   }
 
-  function startEdit(m: Material) {
+  function startEdit(material: Material) {
     setMaterialForm({
-      id: m.id,
-      nome: m.nome || "",
-      categoria: m.categoria || "",
-      unidade: m.unidade || "",
-      pegada_carbono: m.pegada_carbono?.toString() || "",
-      custo_unitario: m.custo_unitario?.toString() || "",
+      id: material.id,
+      nome: material.nome || "",
+      categoria: material.categoria || "",
+      unidade: material.unidade || "",
+      pegada_carbono: material.pegada_carbono?.toString() || "",
+      custo_unitario: material.custo_unitario?.toString() || "",
     });
-    setEditingId(m.id);
+    setEditingId(material.id);
     setCrudError(null);
     setCatalogOpen(false);
     setMaterialsModalOpen(false);
@@ -250,7 +308,7 @@ export default function App() {
       !materialForm.unidade ||
       !materialForm.pegada_carbono
     ) {
-      setCrudError("Preencha id, nome, unidade e coeficiente de carbono.");
+      setCrudError("Preencha ID, nome, unidade e coeficiente de carbono.");
       return;
     }
 
@@ -270,25 +328,26 @@ export default function App() {
     setSaving(true);
     try {
       if (editingId) {
-        const res = await fetch(apiUrl(`/api/materials/${editingId}`), {
+        const response = await fetch(apiUrl(`/api/materials/${editingId}`), {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error("update_error");
+        if (!response.ok) throw new Error("update_error");
       } else {
-        const res = await fetch(apiUrl("/api/materials"), {
+        const response = await fetch(apiUrl("/api/materials"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error("create_error");
+        if (!response.ok) throw new Error("create_error");
       }
 
       await loadMaterials();
       resetForm();
-    } catch (e) {
-      console.error(e);
+      setMaterialsModalOpen(false);
+    } catch (saveError) {
+      console.error(saveError);
       setCrudError("Falha ao salvar material.");
     } finally {
       setSaving(false);
@@ -303,84 +362,115 @@ export default function App() {
         userId: String(user.id),
         isAdmin: String(Boolean(user.is_admin)),
       });
-      const res = await fetch(apiUrl(`/api/materials/${id}?${qs.toString()}`), {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("delete_error");
+      const response = await fetch(
+        apiUrl(`/api/materials/${id}?${qs.toString()}`),
+        { method: "DELETE" },
+      );
+      if (!response.ok) throw new Error("delete_error");
       await loadMaterials();
-    } catch (e) {
-      console.error(e);
+    } catch (deleteError) {
+      console.error(deleteError);
       setCrudError("Falha ao remover material.");
     }
   }
 
   const categories = Array.from(
-    new Set(materials.map((m) => m.categoria).filter(Boolean)),
+    new Set(materials.map((material) => material.categoria).filter(Boolean)),
   ) as string[];
-  const filteredMaterials = materials.filter((m) => {
-    const byCategory = categoria ? m.categoria === categoria : true;
+
+  const filteredMaterials = materials.filter((material) => {
+    const byCategory = categoria ? material.categoria === categoria : true;
     const bySearch = search
-      ? m.nome.toLowerCase().includes(search.toLowerCase())
+      ? material.nome.toLowerCase().includes(search.toLowerCase())
       : true;
     return byCategory && bySearch;
   });
-  const selectedMaterial = materials.find((m) => m.id === selected);
+
+  const selectedMaterial = materials.find((material) => material.id === selected);
+
   const filteredMaterialOptions = materialSearch
-    ? materials.filter((m) =>
-        `${m.nome} ${m.id}`.toLowerCase().includes(materialSearch.toLowerCase()),
+    ? materials.filter((material) =>
+        `${material.nome} ${material.id}`
+          .toLowerCase()
+          .includes(materialSearch.toLowerCase()),
       )
     : materials;
-  const totalItems = items.reduce((acc, it) => acc + it.quantidade, 0);
+
+  const totalItems = items.reduce((acc, item) => acc + item.quantidade, 0);
+  const totalMaterials = materials.length;
+  const totalCategories = categories.length;
   const numberFmt = new Intl.NumberFormat("pt-BR", {
     maximumFractionDigits: 2,
   });
-  const breakdown = items.map((it) => {
-    const mat = materials.find((m) => m.id === it.materialId);
-    const factor = mat?.pegada_carbono ? Number(mat.pegada_carbono) : 0;
-    const impact = Number(it.quantidade) * factor;
+
+  const breakdown = items.map((item) => {
+    const material = materials.find((entry) => entry.id === item.materialId);
+    const factor = material?.pegada_carbono ? Number(material.pegada_carbono) : 0;
+    const impact = Number(item.quantidade) * factor;
+
     return {
-      id: it.materialId,
-      nome: mat?.nome || it.materialId,
-      unidade: mat?.unidade || "",
-      quantidade: Number(it.quantidade),
+      id: item.materialId,
+      nome: material?.nome || item.materialId,
+      unidade: material?.unidade || "",
+      quantidade: Number(item.quantidade),
       fator: factor,
       impacto: impact,
     };
   });
-  const totalImpact = breakdown.reduce((acc, it) => acc + it.impacto, 0);
+
+  const totalImpact = breakdown.reduce((acc, item) => acc + item.impacto, 0);
   const topBreakdown = [...breakdown]
     .sort((a, b) => b.impacto - a.impacto)
     .slice(0, 6);
+
   const chartColors = [
-    "#0ea5e9",
-    "#22c55e",
-    "#f97316",
-    "#e11d48",
-    "#8b5cf6",
-    "#14b8a6",
+    "#0f766e",
+    "#c2410c",
+    "#2563eb",
+    "#be123c",
+    "#7c3aed",
+    "#0891b2",
   ];
+
+  const chartTextColor = theme === "dark" ? "#dbe5f4" : "#29404f";
+  const chartGridColor =
+    theme === "dark"
+      ? "rgba(148, 163, 184, 0.16)"
+      : "rgba(37, 99, 235, 0.12)";
+
   const barData = {
-    labels: breakdown.map((it) => it.nome),
+    labels: breakdown.map((item) => item.nome),
     datasets: [
       {
-        label: "Impacto (kgCO₂eq)",
-        data: breakdown.map((it) => it.impacto),
-        backgroundColor: "#0ea5e9",
+        label: "Impacto (kgCO2eq)",
+        data: breakdown.map((item) => item.impacto),
+        backgroundColor: [
+          "rgba(15, 118, 110, 0.85)",
+          "rgba(194, 65, 12, 0.82)",
+          "rgba(37, 99, 235, 0.82)",
+          "rgba(190, 24, 93, 0.82)",
+          "rgba(124, 58, 237, 0.82)",
+          "rgba(8, 145, 178, 0.82)",
+        ],
+        borderRadius: 14,
       },
     ],
   };
+
   const doughnutData = {
-    labels: topBreakdown.map((it) => it.nome),
+    labels: topBreakdown.map((item) => item.nome),
     datasets: [
       {
-        data: topBreakdown.map((it) => it.impacto),
+        data: topBreakdown.map((item) => item.impacto),
         backgroundColor: chartColors.slice(0, topBreakdown.length),
+        borderWidth: 0,
       },
     ],
   };
 
   function exportToExcel() {
     if (breakdown.length === 0) return;
+
     const summaryRows = [
       {
         metric: "Pegada total (kgCO2eq)",
@@ -388,38 +478,40 @@ export default function App() {
         api_total: result?.apiTotal ?? "",
       },
     ];
-    const itemRows = breakdown.map((it) => ({
-      id: it.id,
-      nome: it.nome,
-      quantidade: it.quantidade,
-      unidade: it.unidade,
-      coeficiente: it.fator,
-      impacto_kgco2eq: it.impacto,
-    }));
-    const topRows = topBreakdown.map((it) => ({
-      nome: it.nome,
-      impacto_kgco2eq: it.impacto,
+
+    const itemRows = breakdown.map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      quantidade: item.quantidade,
+      unidade: item.unidade,
+      coeficiente: item.fator,
+      impacto_kgco2eq: item.impacto,
     }));
 
-    const wb = XLSX.utils.book_new();
+    const topRows = topBreakdown.map((item) => ({
+      nome: item.nome,
+      impacto_kgco2eq: item.impacto,
+    }));
+
+    const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(
-      wb,
+      workbook,
       XLSX.utils.json_to_sheet(summaryRows),
       "Resumo",
     );
     XLSX.utils.book_append_sheet(
-      wb,
+      workbook,
       XLSX.utils.json_to_sheet(itemRows),
       "Itens",
     );
     XLSX.utils.book_append_sheet(
-      wb,
+      workbook,
       XLSX.utils.json_to_sheet(topRows),
       "TopCarbono",
     );
 
     const fileName = `impacto_carbono_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    XLSX.writeFile(workbook, fileName);
   }
 
   return (
@@ -452,7 +544,7 @@ export default function App() {
                   className="form-control"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="mínimo 6 caracteres"
+                  placeholder="minimo 6 caracteres"
                   required
                 />
               </div>
@@ -485,8 +577,8 @@ export default function App() {
                 }
               >
                 {authMode === "login"
-                  ? "Ainda não tem conta? Cadastre-se"
-                  : "Já tem conta? Entrar"}
+                  ? "Ainda nao tem conta? Cadastre-se"
+                  : "Ja tem conta? Entrar"}
               </button>
             </div>
           </div>
@@ -500,14 +592,16 @@ export default function App() {
                 Monte um projeto e estime impactos ambientais por material.
               </div>
               <div className="text-muted small mt-1">
-                Desenvolvido por Marcos Sá Filho para Ponto da Construção
+                Desenvolvido por Marcos Sa Filho para Ponto da Construcao
               </div>
             </div>
             <div className="d-flex align-items-center gap-2">
               <span className="badge text-bg-success">API ONLINE CLOUD</span>
-              <span className={`badge connection-badge ${isOnline ? 'is-online' : 'is-offline'}`}>
+              <span
+                className={`badge connection-badge ${isOnline ? "is-online" : "is-offline"}`}
+              >
                 <span className="connection-dot" />
-                {isOnline ? 'Online' : 'Offline'}
+                {isOnline ? "Online" : "Offline"}
               </span>
               <button
                 className="btn btn-outline-secondary btn-sm"
@@ -528,7 +622,7 @@ export default function App() {
             <div className="card-body">
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
-                  <h2 className="h5 mb-1">Resultado do cálculo</h2>
+                  <h2 className="h5 mb-1">Resultado do calculo</h2>
                   <div className="text-muted">
                     Detalhamento por item e total da pegada de carbono.
                   </div>
@@ -548,7 +642,7 @@ export default function App() {
               </div>
 
               {!result ? (
-                <div className="text-muted mt-3">Nenhum cálculo realizado.</div>
+                <div className="text-muted mt-3">Nenhum calculo realizado.</div>
               ) : result.error ? (
                 <div className="alert alert-danger mt-3" role="alert">
                   Falha ao calcular impacto.
@@ -557,17 +651,12 @@ export default function App() {
                 <>
                   <div className="impact-total mt-3">
                     <div className="impact-total__label">Pegada total</div>
-                  <div className="text-muted small mt-1">Desenvolvido por Marcos Antonio Alves de Sá Filho</div>
                     <div className="impact-total__value">
-                      {numberFmt.format(totalImpact)} kgCO₂eq
+                      {numberFmt.format(totalImpact)} kgCO2eq
                     </div>
-                  <span className={`badge connection-badge ${isOnline ? 'is-online' : 'is-offline'}`}>
-                    <span className="connection-dot" />
-                    {isOnline ? 'Online' : 'Offline'}
-                  </span>
                     {typeof result.apiTotal === "number" && (
                       <div className="text-muted small">
-                        API: {numberFmt.format(result.apiTotal)} kgCO₂eq
+                        API: {numberFmt.format(result.apiTotal)} kgCO2eq
                       </div>
                     )}
                   </div>
@@ -623,24 +712,24 @@ export default function App() {
                             </td>
                           </tr>
                         ) : (
-                          breakdown.map((it) => (
-                            <tr key={`${it.id}-${it.nome}`}>
+                          breakdown.map((item) => (
+                            <tr key={`${item.id}-${item.nome}`}>
                               <td data-label="Item">
-                                <div className="fw-semibold">{it.nome}</div>
-                                <div className="text-muted small">{it.id}</div>
+                                <div className="fw-semibold">{item.nome}</div>
+                                <div className="text-muted small">{item.id}</div>
                               </td>
                               <td className="text-end" data-label="Quantidade">
-                                {numberFmt.format(it.quantidade)} {it.unidade}
+                                {numberFmt.format(item.quantidade)} {item.unidade}
                               </td>
                               <td className="text-end" data-label="Coeficiente">
-                                {numberFmt.format(it.fator)} kgCO₂eq/
-                                {it.unidade || "-"}
+                                {numberFmt.format(item.fator)} kgCO2eq/
+                                {item.unidade || "-"}
                               </td>
                               <td
                                 className="text-end fw-semibold"
                                 data-label="Impacto"
                               >
-                                {numberFmt.format(it.impacto)} kgCO₂eq
+                                {numberFmt.format(item.impacto)} kgCO2eq
                               </td>
                             </tr>
                           ))
@@ -652,6 +741,7 @@ export default function App() {
               )}
             </div>
           </div>
+
           <div className="row g-4">
             <div className="col-12 col-lg-7">
               <div className="card shadow-sm mb-4">
@@ -660,7 +750,7 @@ export default function App() {
                     <div>
                       <h2 className="h5 mb-1">Materiais</h2>
                       <div className="text-muted">
-                        Cadastre e gerencie os materiais usados nos cálculos.
+                        Cadastre e gerencie os materiais usados nos calculos.
                       </div>
                     </div>
                     <div className="d-flex gap-2 flex-wrap">
@@ -674,12 +764,13 @@ export default function App() {
                         className="btn btn-outline-primary btn-sm"
                         onClick={() => setCatalogOpen(true)}
                       >
-                        Ver catálogo
+                        Ver catalogo
                       </button>
                     </div>
                   </div>
                   <div className="text-muted small mt-3">
-                    Use o catálogo para consultar e editar materiais e o botão de adicionar para criar um item.
+                    Use o catalogo para consultar e editar materiais e o botao
+                    de adicionar para criar um item.
                   </div>
                 </div>
               </div>
@@ -719,26 +810,26 @@ export default function App() {
                     </div>
                   ) : (
                     <ul className="list-group list-group-flush">
-                      {items.map((it, i) => {
-                        const mat = materials.find(
-                          (m) => m.id === it.materialId,
+                      {items.map((item, index) => {
+                        const material = materials.find(
+                          (entry) => entry.id === item.materialId,
                         );
                         return (
                           <li
-                            key={i}
+                            key={index}
                             className="list-group-item d-flex align-items-center justify-content-between"
                           >
                             <div>
                               <div className="fw-semibold">
-                                {mat ? mat.nome : it.materialId}
+                                {material ? material.nome : item.materialId}
                               </div>
                               <div className="text-muted small">
-                                {it.quantidade} {mat?.unidade}
+                                {item.quantidade} {material?.unidade}
                               </div>
                             </div>
                             <button
                               className="btn btn-outline-danger btn-sm"
-                              onClick={() => removeItem(i)}
+                              onClick={() => removeItem(index)}
                             >
                               Remover
                             </button>
@@ -770,18 +861,19 @@ export default function App() {
           </div>
         </div>
       )}
+
       {catalogOpen && (
         <div
           className="modal-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label="Catálogo de materiais"
+          aria-label="Catalogo de materiais"
           onClick={() => setCatalogOpen(false)}
         >
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
               <div>
-                <h2 className="h5 mb-1">Catálogo de Materiais</h2>
+                <h2 className="h5 mb-1">Catalogo de Materiais</h2>
                 <div className="text-muted">
                   Consulte, edite ou remova materiais cadastrados.
                 </div>
@@ -810,9 +902,9 @@ export default function App() {
                   onChange={(e) => setCategoria(e.target.value)}
                 >
                   <option value="">Todas as categorias</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
                     </option>
                   ))}
                 </select>
@@ -827,7 +919,7 @@ export default function App() {
                     <th>Categoria</th>
                     <th className="text-end">Pegada</th>
                     <th className="text-end">Unidade</th>
-                    <th className="text-end">Ações</th>
+                    <th className="text-end">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -838,29 +930,29 @@ export default function App() {
                       </td>
                     </tr>
                   )}
-                  {filteredMaterials.map((m) => (
-                    <tr key={m.id}>
-                      <td data-label="Material">{m.nome}</td>
+                  {filteredMaterials.map((material) => (
+                    <tr key={material.id}>
+                      <td data-label="Material">{material.nome}</td>
                       <td className="text-muted" data-label="Categoria">
-                        {m.categoria || "-"}
+                        {material.categoria || "-"}
                       </td>
                       <td className="text-end" data-label="Pegada">
-                        {m.pegada_carbono}
+                        {material.pegada_carbono}
                       </td>
                       <td className="text-end" data-label="Unidade">
-                        {m.unidade}
+                        {material.unidade}
                       </td>
-                      <td className="text-end" data-label="Ações">
+                      <td className="text-end" data-label="Acoes">
                         <div className="btn-group btn-group-sm" role="group">
                           <button
                             className="btn btn-outline-primary"
-                            onClick={() => startEdit(m)}
+                            onClick={() => startEdit(material)}
                           >
                             Editar
                           </button>
                           <button
                             className="btn btn-outline-danger"
-                            onClick={() => deleteMaterial(m.id)}
+                            onClick={() => deleteMaterial(material.id)}
                           >
                             Excluir
                           </button>
@@ -874,6 +966,7 @@ export default function App() {
           </div>
         </div>
       )}
+
       {materialsModalOpen && (
         <div
           className="modal-overlay"
@@ -882,12 +975,15 @@ export default function App() {
           aria-label="Gerenciar materiais"
           onClick={() => setMaterialsModalOpen(false)}
         >
-          <div className="modal-card modal-card--form" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-card modal-card--form"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
               <div>
                 <h2 className="h5 mb-1">Gerenciar Materiais</h2>
                 <div className="text-muted">
-                  Cadastre o coeficiente de carbono para usar nos cálculos.
+                  Cadastre o coeficiente de carbono para usar nos calculos.
                 </div>
               </div>
               <button
@@ -900,12 +996,12 @@ export default function App() {
 
             <div className="row g-3">
               <div className="col-12 col-md-4">
-                <label className="form-label">ID (Nome único)</label>
+                <label className="form-label">ID (Nome unico)</label>
                 <input
                   className="form-control"
                   value={materialForm.id}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({ ...s, id: e.target.value }))
+                    setMaterialForm((state) => ({ ...state, id: e.target.value }))
                   }
                   placeholder="ex: madeira_certificada"
                   disabled={!!editingId}
@@ -917,8 +1013,8 @@ export default function App() {
                   className="form-control"
                   value={materialForm.nome}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({
-                      ...s,
+                    setMaterialForm((state) => ({
+                      ...state,
                       nome: e.target.value,
                     }))
                   }
@@ -930,8 +1026,8 @@ export default function App() {
                   className="form-control"
                   value={materialForm.categoria}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({
-                      ...s,
+                    setMaterialForm((state) => ({
+                      ...state,
                       categoria: e.target.value,
                     }))
                   }
@@ -943,12 +1039,12 @@ export default function App() {
                   className="form-control"
                   value={materialForm.unidade}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({
-                      ...s,
+                    setMaterialForm((state) => ({
+                      ...state,
                       unidade: e.target.value,
                     }))
                   }
-                  placeholder="m², kg, m³..."
+                  placeholder="m2, kg, m3..."
                 />
               </div>
               <div className="col-12 col-md-4">
@@ -958,24 +1054,24 @@ export default function App() {
                   className="form-control"
                   value={materialForm.pegada_carbono}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({
-                      ...s,
+                    setMaterialForm((state) => ({
+                      ...state,
                       pegada_carbono: e.target.value,
                     }))
                   }
-                  placeholder="kgCO₂eq / unidade"
+                  placeholder="kgCO2eq / unidade"
                   min={0}
                 />
               </div>
               <div className="col-12 col-md-4">
-                <label className="form-label">Custo unitário</label>
+                <label className="form-label">Custo unitario</label>
                 <input
                   type="number"
                   className="form-control"
                   value={materialForm.custo_unitario}
                   onChange={(e) =>
-                    setMaterialForm((s) => ({
-                      ...s,
+                    setMaterialForm((state) => ({
+                      ...state,
                       custo_unitario: e.target.value,
                     }))
                   }
@@ -1010,6 +1106,7 @@ export default function App() {
           </div>
         </div>
       )}
+
       {addItemModalOpen && (
         <div
           className="modal-overlay"
@@ -1018,7 +1115,10 @@ export default function App() {
           aria-label="Adicionar item ao projeto"
           onClick={() => setAddItemModalOpen(false)}
         >
-          <div className="modal-card modal-card--form" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-card modal-card--form"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
               <div>
                 <h2 className="h5 mb-1">Adicionar item</h2>
@@ -1052,15 +1152,15 @@ export default function App() {
                 onChange={(e) => setSelected(e.target.value)}
               >
                 <option value="">Selecione um material</option>
-                {filteredMaterialOptions.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.nome} ({m.unidade})
+                {filteredMaterialOptions.map((material) => (
+                  <option key={material.id} value={material.id}>
+                    {material.nome} ({material.unidade})
                   </option>
                 ))}
               </select>
               {selectedMaterial && (
                 <div className="form-text">
-                  Pegada: {selectedMaterial.pegada_carbono} kgCO₂eq /{" "}
+                  Pegada: {selectedMaterial.pegada_carbono} kgCO2eq /{" "}
                   {selectedMaterial.unidade}
                 </div>
               )}
@@ -1087,8 +1187,8 @@ export default function App() {
             <button
               className="btn btn-primary w-100"
               onClick={() => {
-                addItem();
-                if (!formError) setAddItemModalOpen(false);
+                const added = addItem();
+                if (added) setAddItemModalOpen(false);
               }}
             >
               Adicionar ao projeto
@@ -1096,6 +1196,7 @@ export default function App() {
           </div>
         </div>
       )}
+
       <button
         className="btn floating-theme-toggle"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -1104,7 +1205,7 @@ export default function App() {
         }
         title={theme === "dark" ? "Tema claro" : "Tema escuro"}
       >
-        {theme === "dark" ? "☀️" : "🌙"}
+        {theme === "dark" ? "Light" : "Dark"}
       </button>
     </div>
   );
