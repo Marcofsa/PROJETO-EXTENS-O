@@ -515,62 +515,101 @@ export default function App() {
   }
 
   return (
-    <div className="app-bg">
+    <div className="app-shell">
       {!user ? (
-        <div className="container py-4 auth-container">
-          <div className="auth-card">
-            <div className="text-center mb-4">
-              <h1 className="mb-1">Bem-vindo</h1>
-              <div className="text-muted">
-                Entre com seu email e senha para continuar.
+        <div className="auth-layout">
+          <section className="auth-brand-panel">
+            <div>
+              <span className="hero-chip">Plataforma de impacto</span>
+              <h1>Carbono com leitura clara para projeto e catalogo.</h1>
+              <p className="mb-0">
+                Centralize materiais, monte composicoes e acompanhe a pegada de
+                carbono com uma interface mais limpa e pronta para uso diario.
+              </p>
+            </div>
+
+            <div className="hero-metrics">
+              <div className="hero-note">
+                <span>Catalogo</span>
+                <strong>Cadastre materiais e padronize coeficientes.</strong>
+              </div>
+              <div className="hero-note">
+                <span>Projeto</span>
+                <strong>Adicione itens e compare impacto por material.</strong>
+              </div>
+              <div className="hero-note">
+                <span>Relatorio</span>
+                <strong>Exporte planilhas e acompanhe os maiores emissores.</strong>
               </div>
             </div>
-            <form onSubmit={handleAuthSubmit} className="auth-form">
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  placeholder="voce@exemplo.com"
-                  required
-                />
-              </div>
-              <div className="mb-2">
-                <label className="form-label">Senha</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="minimo 6 caracteres"
-                  required
-                />
-              </div>
 
-              {authError && (
-                <div className="alert alert-warning py-2" role="alert">
-                  {authError}
+            <div className="hero-note-grid">
+              <div className="hero-note">
+                <span>Operacao</span>
+                <strong>{isOnline ? "Sistema online" : "Sistema offline"}</strong>
+              </div>
+              <div className="hero-note">
+                <span>Uso</span>
+                <strong>Login rapido para equipes e projetos recorrentes.</strong>
+              </div>
+            </div>
+          </section>
+
+          <div className="auth-form-panel">
+            <section className="auth-panel-card">
+              <span className="panel-pill">
+                {authMode === "login" ? "Acesso seguro" : "Criar conta"}
+              </span>
+              <h2>{authMode === "login" ? "Entrar" : "Cadastro"}</h2>
+              <p className="mb-0">
+                Use seu email e senha para acessar os materiais e os calculos.
+              </p>
+
+              <form onSubmit={handleAuthSubmit} className="auth-form">
+                <div className="field-stack">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="voce@exemplo.com"
+                    required
+                  />
                 </div>
-              )}
+                <div className="field-stack">
+                  <label className="form-label">Senha</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="minimo 6 caracteres"
+                    required
+                  />
+                </div>
+
+                {authError && (
+                  <div className="alert alert-warning app-alert py-2" role="alert">
+                    {authError}
+                  </div>
+                )}
+
+                <button
+                  className="btn btn-primary w-100"
+                  type="submit"
+                  disabled={authLoading}
+                >
+                  {authLoading
+                    ? "Aguarde..."
+                    : authMode === "register"
+                      ? "Criar conta"
+                      : "Entrar"}
+                </button>
+              </form>
 
               <button
-                className="btn btn-primary w-100"
-                type="submit"
-                disabled={authLoading}
-              >
-                {authLoading
-                  ? "Aguarde..."
-                  : authMode === "register"
-                    ? "Criar conta"
-                    : "Entrar"}
-              </button>
-            </form>
-
-            <div className="text-center mt-3">
-              <button
-                className="btn btn-link auth-toggle"
+                className="btn btn-link auth-switch"
                 type="button"
                 onClick={() =>
                   setAuthMode(authMode === "login" ? "register" : "login")
@@ -580,139 +619,196 @@ export default function App() {
                   ? "Ainda nao tem conta? Cadastre-se"
                   : "Ja tem conta? Entrar"}
               </button>
-            </div>
+            </section>
           </div>
         </div>
       ) : (
-        <div className="container py-4">
-          <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 app-header">
-            <div>
-              <h1 className="mb-1">Calculadora de Passo de Carbono</h1>
-              <div className="text-muted">
-                Monte um projeto e estime impactos ambientais por material.
-              </div>
-              <div className="text-muted small mt-1">
-                Desenvolvido por Marcos Sa Filho para Ponto da Construcao
+        <div className="dashboard-shell">
+          <section className="hero-banner">
+            <div className="hero-banner__content">
+              <span className="hero-chip">Painel do projeto</span>
+              <h1>Calculadora de carbono para materiais de construcao.</h1>
+              <p className="mb-0">
+                Combine catalogo, composicao do projeto e leitura visual do
+                impacto em uma unica tela.
+              </p>
+
+              <div className="hero-badges mt-4 justify-content-start">
+                <span
+                  className={`connection-badge ${isOnline ? "is-online" : "is-offline"}`}
+                >
+                  <span className="connection-dot" />
+                  {isOnline ? "Online" : "Offline"}
+                </span>
+                <span className="badge rounded-pill text-bg-light">
+                  {totalMaterials} materiais
+                </span>
+                <span className="badge rounded-pill text-bg-light">
+                  {items.length} itens no projeto
+                </span>
               </div>
             </div>
-            <div className="d-flex align-items-center gap-2">
-              <span className="badge text-bg-success">API ONLINE CLOUD</span>
-              <span
-                className={`badge connection-badge ${isOnline ? "is-online" : "is-offline"}`}
-              >
-                <span className="connection-dot" />
-                {isOnline ? "Online" : "Offline"}
-              </span>
-              <button
-                className="btn btn-outline-secondary btn-sm"
-                onClick={handleLogout}
-              >
-                Sair
-              </button>
+
+            <div className="hero-banner__aside">
+              <div className="user-badge">
+                <span>Usuario conectado</span>
+                <strong>{user.email}</strong>
+              </div>
+              <div className="action-row">
+                <button
+                  className="btn btn-light"
+                  onClick={() => setAddItemModalOpen(true)}
+                >
+                  Novo item
+                </button>
+                <button
+                  className="btn btn-outline-light hero-logout"
+                  onClick={handleLogout}
+                >
+                  Sair
+                </button>
+              </div>
             </div>
+          </section>
+
+          <div className="dashboard-metrics">
+            <StatCard label="Materiais ativos" value={String(totalMaterials)} />
+            <StatCard
+              label="Categorias"
+              value={String(totalCategories)}
+              tone="accent"
+            />
+            <StatCard
+              label="Quantidade total"
+              value={numberFmt.format(totalItems)}
+            />
+            <StatCard
+              label="Pegada estimada"
+              value={`${numberFmt.format(totalImpact)} kgCO2eq`}
+              tone="success"
+            />
           </div>
 
           {error && (
-            <div className="alert alert-danger" role="alert">
+            <div className="alert alert-danger app-alert mb-0" role="alert">
               {error}
             </div>
           )}
 
-          <div className="card shadow-sm mt-4 result-card">
-            <div className="card-body">
-              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div>
-                  <h2 className="h5 mb-1">Resultado do calculo</h2>
-                  <div className="text-muted">
-                    Detalhamento por item e total da pegada de carbono.
-                  </div>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  {result?.calculatedAt && (
-                    <span className="badge text-bg-light">Calculado agora</span>
-                  )}
+          <div className="dashboard-grid">
+            <div className="dashboard-grid__main">
+              <AppSection
+                eyebrow="Resultado"
+                title="Resumo do impacto"
+                description="Veja a consolidacao do calculo, o ranking dos emissores e a tabela detalhada."
+                actions={
                   <button
-                    className="btn btn-outline-dark btn-sm export-btn"
+                    className="btn btn-outline-dark btn-sm"
                     onClick={exportToExcel}
                     disabled={breakdown.length === 0}
                   >
                     Exportar Excel
                   </button>
-                </div>
-              </div>
-
-              {!result ? (
-                <div className="text-muted mt-3">Nenhum calculo realizado.</div>
-              ) : result.error ? (
-                <div className="alert alert-danger mt-3" role="alert">
-                  Falha ao calcular impacto.
-                </div>
-              ) : (
-                <>
-                  <div className="impact-total mt-3">
-                    <div className="impact-total__label">Pegada total</div>
-                    <div className="impact-total__value">
-                      {numberFmt.format(totalImpact)} kgCO2eq
-                    </div>
-                    {typeof result.apiTotal === "number" && (
-                      <div className="text-muted small">
-                        API: {numberFmt.format(result.apiTotal)} kgCO2eq
-                      </div>
-                    )}
+                }
+              >
+                {!result ? (
+                  <div className="empty-state">
+                    <strong>Nenhum calculo realizado.</strong>
+                    <p className="mb-0">
+                      Monte seu projeto e execute o calculo para liberar os
+                      graficos e a exportacao.
+                    </p>
                   </div>
+                ) : result.error ? (
+                  <div className="alert alert-danger app-alert mb-0" role="alert">
+                    Falha ao calcular impacto.
+                  </div>
+                ) : (
+                  <>
+                    <div className="impact-hero">
+                      <div>
+                        <span className="impact-hero__label">Pegada total</span>
+                        <strong className="impact-hero__value">
+                          {numberFmt.format(totalImpact)} kgCO2eq
+                        </strong>
+                      </div>
+                      <div className="impact-hero__meta">
+                        <span>Leitura da API</span>
+                        <strong>
+                          {typeof result.apiTotal === "number"
+                            ? `${numberFmt.format(result.apiTotal)} kgCO2eq`
+                            : "Aguardando valor"}
+                        </strong>
+                      </div>
+                    </div>
 
-                  {breakdown.length > 0 && (
-                    <div className="chart-grid mt-4">
-                      <div className="card shadow-sm chart-card">
-                        <div className="card-body">
-                          <h3 className="h6">Impacto por item</h3>
+                    <div className="mini-highlight-grid">
+                      <div className="mini-highlight">
+                        <span>Itens avaliados</span>
+                        <strong>{breakdown.length}</strong>
+                      </div>
+                      <div className="mini-highlight">
+                        <span>Maior emissor</span>
+                        <strong>{topBreakdown[0]?.nome || "Sem dados"}</strong>
+                      </div>
+                    </div>
+
+                    {breakdown.length > 0 && (
+                      <div className="chart-grid">
+                        <div className="chart-panel">
+                          <h3>Impacto por item</h3>
                           <div className="chart-box">
                             <Bar
                               data={barData}
                               options={{
                                 responsive: true,
+                                scales: {
+                                  x: {
+                                    ticks: { color: chartTextColor },
+                                    grid: { display: false },
+                                  },
+                                  y: {
+                                    ticks: { color: chartTextColor },
+                                    grid: { color: chartGridColor },
+                                  },
+                                },
                                 plugins: { legend: { display: false } },
                               }}
                             />
                           </div>
                         </div>
-                      </div>
-                      <div className="card shadow-sm chart-card">
-                        <div className="card-body">
-                          <h3 className="h6">Maiores emissores</h3>
+                        <div className="chart-panel">
+                          <h3>Maiores emissores</h3>
                           <div className="chart-box">
                             <Doughnut
                               data={doughnutData}
                               options={{
                                 responsive: true,
-                                plugins: { legend: { position: "bottom" } },
+                                plugins: {
+                                  legend: {
+                                    position: "bottom",
+                                    labels: { color: chartTextColor },
+                                  },
+                                },
                               }}
                             />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="table-responsive mt-3">
-                    <table className="table table-hover align-middle">
-                      <thead>
-                        <tr>
-                          <th>Item</th>
-                          <th className="text-end">Quantidade</th>
-                          <th className="text-end">Coeficiente</th>
-                          <th className="text-end">Impacto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {breakdown.length === 0 ? (
+                    <div className="table-responsive">
+                      <table className="table align-middle">
+                        <thead>
                           <tr>
-                            <td colSpan={4} className="text-muted">
-                              Nenhum item no projeto.
-                            </td>
+                            <th>Item</th>
+                            <th className="text-end">Quantidade</th>
+                            <th className="text-end">Coeficiente</th>
+                            <th className="text-end">Impacto</th>
                           </tr>
-                        ) : (
-                          breakdown.map((item) => (
+                        </thead>
+                        <tbody>
+                          {breakdown.map((item) => (
                             <tr key={`${item.id}-${item.nome}`}>
                               <td data-label="Item">
                                 <div className="fw-semibold">{item.nome}</div>
@@ -725,138 +821,194 @@ export default function App() {
                                 {numberFmt.format(item.fator)} kgCO2eq/
                                 {item.unidade || "-"}
                               </td>
-                              <td
-                                className="text-end fw-semibold"
-                                data-label="Impacto"
-                              >
+                              <td className="text-end fw-semibold" data-label="Impacto">
                                 {numberFmt.format(item.impacto)} kgCO2eq
                               </td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </AppSection>
 
-          <div className="row g-4">
-            <div className="col-12 col-lg-7">
-              <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                      <h2 className="h5 mb-1">Materiais</h2>
-                      <div className="text-muted">
-                        Cadastre e gerencie os materiais usados nos calculos.
-                      </div>
-                    </div>
-                    <div className="d-flex gap-2 flex-wrap">
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => setMaterialsModalOpen(true)}
-                      >
-                        Adicionar um material
-                      </button>
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => setCatalogOpen(true)}
-                      >
-                        Ver catalogo
-                      </button>
-                    </div>
+              <AppSection
+                eyebrow="Catalogo"
+                title="Materiais cadastrados"
+                description="Gerencie o acervo de materiais e mantenha o catalogo pronto para novos projetos."
+                actions={
+                  <div className="action-row">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setMaterialsModalOpen(true)}
+                    >
+                      Novo material
+                    </button>
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => setCatalogOpen(true)}
+                    >
+                      Abrir catalogo
+                    </button>
                   </div>
-                  <div className="text-muted small mt-3">
-                    Use o catalogo para consultar e editar materiais e o botao
-                    de adicionar para criar um item.
+                }
+              >
+                <div className="project-summary-strip">
+                  <div>
+                    <span>Total de materiais</span>
+                    <strong>{totalMaterials}</strong>
+                  </div>
+                  <div>
+                    <span>Categorias ativas</span>
+                    <strong>{totalCategories}</strong>
+                  </div>
+                  <div>
+                    <span>Busca atual</span>
+                    <strong>{search || "Sem filtro"}</strong>
                   </div>
                 </div>
-              </div>
+
+                {materials.length === 0 ? (
+                  <div className="empty-state empty-state--soft">
+                    <strong>Nenhum material cadastrado.</strong>
+                    <p className="mb-0">
+                      Adicione materiais para liberar o fluxo de calculo do
+                      projeto.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="catalog-preview">
+                    {materials.slice(0, 4).map((material) => (
+                      <div key={material.id} className="catalog-preview__item">
+                        <div>
+                          <span>{material.nome}</span>
+                          <p>
+                            {material.categoria || "Sem categoria"} •{" "}
+                            {material.unidade}
+                          </p>
+                        </div>
+                        <span>{numberFmt.format(material.pegada_carbono)} kg</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </AppSection>
             </div>
 
-            <div className="col-12 col-lg-5">
-              <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                  <h2 className="h5">Projeto</h2>
-                  <div className="text-muted mb-3">
-                    Adicione itens ao projeto para calcular o impacto.
-                  </div>
+            <div className="dashboard-grid__side">
+              <AppSection
+                eyebrow="Projeto"
+                title="Composicao atual"
+                description="Adicione itens, acompanhe o volume total e rode o calculo quando estiver pronto."
+                actions={
                   <button
-                    className="btn btn-primary w-100"
+                    className="btn btn-primary btn-sm"
                     onClick={() => setAddItemModalOpen(true)}
                   >
-                    Adicionar item ao projeto
+                    Adicionar item
                   </button>
+                }
+              >
+                <div className="project-summary-strip">
+                  <div>
+                    <span>Itens</span>
+                    <strong>{items.length}</strong>
+                  </div>
+                  <div>
+                    <span>Quantidade</span>
+                    <strong>{numberFmt.format(totalItems)}</strong>
+                  </div>
+                  <div>
+                    <span>Status</span>
+                    <strong>{items.length > 0 ? "Pronto" : "Vazio"}</strong>
+                  </div>
                 </div>
-              </div>
 
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex align-items-center justify-content-between">
-                    <h2 className="h5 mb-0">Itens do projeto</h2>
-                    <span className="badge text-bg-light">
-                      {items.length} itens
-                    </span>
+                {items.length === 0 ? (
+                  <div className="empty-state">
+                    <strong>Seu projeto ainda esta vazio.</strong>
+                    <p className="mb-0">
+                      Adicione um item para iniciar a composicao do calculo.
+                    </p>
                   </div>
-                  <div className="text-muted mb-3">
-                    Total de quantidades: {totalItems}
-                  </div>
-
-                  {items.length === 0 ? (
-                    <div className="text-muted">
-                      Adicione itens para calcular o impacto.
-                    </div>
-                  ) : (
-                    <ul className="list-group list-group-flush">
-                      {items.map((item, index) => {
-                        const material = materials.find(
-                          (entry) => entry.id === item.materialId,
-                        );
-                        return (
-                          <li
-                            key={index}
-                            className="list-group-item d-flex align-items-center justify-content-between"
-                          >
-                            <div>
-                              <div className="fw-semibold">
-                                {material ? material.nome : item.materialId}
-                              </div>
-                              <div className="text-muted small">
-                                {item.quantidade} {material?.unidade}
-                              </div>
-                            </div>
+                ) : (
+                  <div className="item-stack">
+                    {items.map((item, index) => {
+                      const material = materials.find(
+                        (entry) => entry.id === item.materialId,
+                      );
+                      return (
+                        <div key={index} className="project-item-card">
+                          <div>
+                            <span className="project-item-card__eyebrow">
+                              Item {index + 1}
+                            </span>
+                            <h3>{material ? material.nome : item.materialId}</h3>
+                            <p>
+                              {numberFmt.format(item.quantidade)}{" "}
+                              {material?.unidade || "un"}
+                            </p>
+                          </div>
+                          <div className="project-item-card__meta">
+                            <span className="badge rounded-pill text-bg-light">
+                              {material?.categoria || "Sem categoria"}
+                            </span>
                             <button
                               className="btn btn-outline-danger btn-sm"
                               onClick={() => removeItem(index)}
                             >
                               Remover
                             </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
-                  <div className="d-grid gap-2 mt-3">
-                    <button
-                      className="btn btn-success"
-                      onClick={calculate}
-                      disabled={items.length === 0}
-                    >
-                      Calcular Impacto
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={() => setItems([])}
-                      disabled={items.length === 0}
-                    >
-                      Limpar itens
-                    </button>
+                <div className="action-row mt-3">
+                  <button
+                    className="btn btn-success flex-fill"
+                    onClick={calculate}
+                    disabled={items.length === 0}
+                  >
+                    Calcular impacto
+                  </button>
+                  <button
+                    className="btn btn-outline-secondary flex-fill"
+                    onClick={() => setItems([])}
+                    disabled={items.length === 0}
+                  >
+                    Limpar
+                  </button>
+                </div>
+              </AppSection>
+
+              <AppSection
+                eyebrow="Visao rapida"
+                title="Panorama"
+                description="Indicadores compactos para acompanhar o que esta mais pesado no projeto."
+              >
+                <div className="mini-overview">
+                  <div className="mini-overview__row">
+                    <span>Ultimo calculo</span>
+                    <strong>
+                      {result?.calculatedAt
+                        ? new Date(result.calculatedAt).toLocaleString("pt-BR")
+                        : "Nao realizado"}
+                    </strong>
+                  </div>
+                  <div className="mini-overview__row">
+                    <span>Maior emissor</span>
+                    <strong>{topBreakdown[0]?.nome || "Sem dados"}</strong>
+                  </div>
+                  <div className="mini-overview__row">
+                    <span>Busca no catalogo</span>
+                    <strong>{materialSearch || "Sem busca"}</strong>
                   </div>
                 </div>
-              </div>
+              </AppSection>
             </div>
           </div>
         </div>

@@ -656,6 +656,22 @@ textarea {
   border-color: var(--line-strong);
 }
 
+.btn-light {
+  background: rgba(255, 248, 240, 0.94);
+  border: 1px solid rgba(255, 248, 240, 0.92);
+  color: #1d2935;
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 248, 240, 0.28);
+  color: #fff8f0;
+}
+
+.btn-outline-light:hover,
+.btn-light:hover {
+  color: #1d2935;
+}
+
 .btn:hover {
   transform: translateY(-1px);
 }
@@ -697,6 +713,18 @@ textarea {
 .hero-logout {
   color: #fff8f0;
   border-color: rgba(255, 255, 255, 0.22);
+}
+
+.hero-banner .badge.text-bg-light,
+.project-item-card .badge.text-bg-light {
+  background: rgba(255, 248, 240, 0.14) !important;
+  color: #fff8f0 !important;
+  border: 1px solid rgba(255, 248, 240, 0.16);
+}
+
+.auth-panel-card .btn-link {
+  text-align: left;
+  justify-content: flex-start;
 }
 
 .floating-theme-toggle {
@@ -755,6 +783,22 @@ html[data-theme="dark"] .form-select {
 html[data-theme="dark"] .badge.text-bg-success {
   background-color: rgba(134, 239, 172, 0.16) !important;
   color: #c9ffd3 !important;
+}
+
+html[data-theme="dark"] .btn-light {
+  background: rgba(255, 248, 240, 0.92);
+  color: #0f1720;
+}
+
+html[data-theme="dark"] .btn-outline-light:hover {
+  color: #fff8f0;
+  background: rgba(255, 248, 240, 0.08);
+}
+
+html[data-theme="dark"] .hero-banner .badge.text-bg-light,
+html[data-theme="dark"] .project-item-card .badge.text-bg-light {
+  background: rgba(255, 248, 240, 0.08) !important;
+  color: #f7ecdf !important;
 }
 
 @media (max-width: 1080px) {
